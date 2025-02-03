@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useState } from "react";
 
 interface SystemInfo {
   system_name?: string;
@@ -19,9 +20,18 @@ const exampleData: SystemInfo = {
 };
 
 function App() {
+  const [headerText, setHeaderText] = useState<string | null>(null);
   const [systemInfo, setSystemInfo] = useState(exampleData);
+
+  useEffect(() => {
+    invoke<string>("generate_header_text", { operatingSystem: "Windows" }).then(
+      (text) => setHeaderText(text)
+    );
+  }, []);
+
   return (
     <div>
+      <p>{headerText}</p>
       <p>System name: {systemInfo.system_name}</p>
       <p>Kernel version: {systemInfo.kernel_version}</p>
       <p>OS version: {systemInfo.os_version}</p>
