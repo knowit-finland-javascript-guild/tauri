@@ -16,9 +16,9 @@
 
 - Install [Node.js](https://nodejs.org/en) (Only required if using JavaScript for frontend)
 - Install development dependencies
-  - ```xcode-select --install```
+  - `xcode-select --install`
 - Install Rust
-  - ```curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh```
+  - `curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh`
 
 ### Recommended VS Code extensions
 
@@ -31,10 +31,10 @@
 
 ### Initializing the app
 
-- Run ```npm create tauri-app@latest``` (note that in Windows this must be run in Powershell, VS Code integrated terminal or Windows terminal, Git bash does not work)
+- Run `npm create tauri-app@latest` (note that in Windows this must be run in Powershell, VS Code integrated terminal or Windows terminal, Git bash does not work)
 - Select preferred project framework
 - Install node dependencies
-- Run command ```npm run tauri dev``` to start the example app
+- Run command `npm run tauri dev` to start the example app
 
 ## Step 2
 
@@ -81,3 +81,42 @@ Commands can return a value when they are awaited and they can be passed a list 
 - Apply the handler in builder
 - Call the command from frontend with invoke
 - Display return value as header
+
+## Step 4
+
+### Using Rust for low level operations
+
+Previous example returned simple formatted string from the backend, but we can instead run low level operations and access resources that are normally outside of web applications scope.
+
+Installing dependencies for the Rust backend is done via cargo in src-tauri directory. For this example we use [sysinfo](https://docs.rs/sysinfo/latest/sysinfo/) package to return current system resources.
+
+- Run `cargo add sysinfo` in `src-tauri`
+- Create handler for getting system information
+- Call the handler from frontend and display the data
+
+```rs
+#[derive(Serialize)]
+struct SystemInfo {
+    system_name: Option<String>,
+    kernel_version: Option<String>,
+    os_version: Option<String>,
+    host_name: Option<String>,
+    memory_usage: u64,
+    cpu_usage: f32,
+}
+
+#[tauri::command]
+fn get_system_info() -> SystemInfo {
+    let mut sys = System::new_all();
+    sys.refresh_cpu_usage();
+
+    SystemInfo {
+        system_name: System::name(),
+        kernel_version: System::kernel_version(),
+        os_version: System::os_version(),
+        host_name: System::host_name(),
+        memory_usage: sys.used_memory(),
+        cpu_usage: sys.global_cpu_usage(),
+    }
+}
+```

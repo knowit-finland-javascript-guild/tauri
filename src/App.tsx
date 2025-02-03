@@ -10,28 +10,21 @@ interface SystemInfo {
   cpu_usage: number;
 }
 
-const exampleData: SystemInfo = {
-  system_name: "Windows",
-  kernel_version: "1",
-  os_version: "1",
-  host_name: "Knowit",
-  memory_usage: 1000,
-  cpu_usage: 50,
-};
-
 function App() {
-  const [headerText, setHeaderText] = useState<string | null>(null);
-  const [systemInfo, setSystemInfo] = useState(exampleData);
+  const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
 
   useEffect(() => {
-    invoke<string>("generate_header_text", { operatingSystem: "Windows" }).then(
-      (text) => setHeaderText(text)
+    invoke<SystemInfo>("get_system_info", { operatingSystem: "Windows" }).then(
+      setSystemInfo
     );
   }, []);
 
+  if (!systemInfo) {
+    return <p>Loading...</p>;
+  }
+
   return (
     <div>
-      <p>{headerText}</p>
       <p>System name: {systemInfo.system_name}</p>
       <p>Kernel version: {systemInfo.kernel_version}</p>
       <p>OS version: {systemInfo.os_version}</p>
