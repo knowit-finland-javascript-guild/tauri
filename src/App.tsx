@@ -1,5 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
+import { listen } from "@tauri-apps/api/event";
 
 interface SystemInfo {
   system_name?: string;
@@ -14,9 +14,12 @@ function App() {
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
 
   useEffect(() => {
-    invoke<SystemInfo>("get_system_info", { operatingSystem: "Windows" }).then(
-      setSystemInfo
+    const listener = listen<SystemInfo>("update_system_info", (e) =>
+      setSystemInfo(e.payload)
     );
+    return () => {
+      listener.then((unlisten) => unlisten());
+    };
   }, []);
 
   if (!systemInfo) {
