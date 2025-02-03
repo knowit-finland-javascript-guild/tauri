@@ -192,3 +192,59 @@ useEffect(() => {
   };
 }, []);
 ```
+
+## Step 6
+
+### Tauri Plugins
+
+[Documentation](https://v2.tauri.app/develop/plugins/)
+
+In previous example, we created our own logic for handling low level operations. Essentially this has no difference to what plugins are. Plugins are just collection of code that somebody has created, which can be applied to the backend and then be called from the frontend.
+
+In this example we add plugin for creating a persistent key-value store using [tauri-plugin-store](https://github.com/tauri-apps/tauri-plugin-store/tree/v2), which we use to save theming options for the application.
+
+- Run `cargo add tauri-plugin-store` in `src-tauri`
+- Run `npm add @tauri-apps/plugin-store` in root folder
+- Apply the plugin in builder
+- Call store from frontend
+- Add required permissions to `src-tauri/capabilities/default.json`
+
+```rs
+tauri::Builder
+        ::default()
+        .setup(|app| {
+            let handle = app.handle().clone();
+            async_runtime::spawn(async move {
+                loop {
+                    update_system_info(&handle);
+                    thread::sleep(time::Duration::from_millis(1000));
+                }
+            });
+            Ok(())
+        })
+        .plugin(tauri_plugin_store::Builder::default().build())
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+```
+
+```tsx
+const store = new LazyStore(".settings.dat");
+const fonts = ["Arial", "Wingdings 3", "Comic Sans MS"];
+
+store.get<string | null>("font").then((font) => {
+  setFont(font ?? fonts[0]);
+});
+
+const updateFont = async (e: ChangeEvent<HTMLSelectElement>) => {
+  const font = e.target.value;
+  setFont(font);
+  await store.set("font", font);
+  await store.save();
+};
+
+<select onChange={updateFont}>
+  {fonts.map((f) => (
+    <option selected={f === font}>{f}</option>
+  ))}
+</select>;
+```
