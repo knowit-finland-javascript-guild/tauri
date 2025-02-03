@@ -248,3 +248,8 @@ const updateFont = async (e: ChangeEvent<HTMLSelectElement>) => {
   ))}
 </select>;
 ```
+
+## Bonus step
+
+- List running processes as an array and send them to the frontend together with other system information
+- Display processes in a table and move our application to the first row in the table

@@ -11,6 +11,12 @@ interface SystemInfo {
   host_name?: string;
   memory_usage: number;
   cpu_usage: number;
+  processes: {
+    pid: number;
+    name: string;
+    cpu: number;
+    memory: number;
+  }[];
 }
 
 const fonts = ["Arial", "Wingdings 3", "Comic Sans MS"];
@@ -42,6 +48,12 @@ function App() {
     return <p>Loading...</p>;
   }
 
+  systemInfo.processes.sort((a, b) => {
+    if (a.name.includes("tauri")) return -1;
+    else if (b.name.includes("tauri")) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <div>
       <style>
@@ -60,6 +72,22 @@ function App() {
           <option selected={f === font}>{f}</option>
         ))}
       </select>
+      <table>
+        <thead style={{ fontWeight: "bold" }}>
+          <td>PID</td>
+          <td>Name</td>
+          <td>CPU usage (%)</td>
+          <td>Memory usage (B)</td>
+        </thead>
+        {systemInfo.processes.map((process) => (
+          <tr>
+            <td>{process.pid}</td>
+            <td>{process.name}</td>
+            <td>{process.cpu}</td>
+            <td>{process.memory}</td>
+          </tr>
+        ))}
+      </table>
     </div>
   );
 }

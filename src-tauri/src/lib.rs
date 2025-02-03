@@ -5,6 +5,14 @@ use sysinfo::System;
 use tauri::{ async_runtime, AppHandle, Emitter };
 
 #[derive(Serialize, Clone)]
+struct Process {
+    pid: u32,
+    name: String,
+    cpu: f32,
+    memory: u64,
+}
+
+#[derive(Serialize, Clone)]
 struct SystemInfo {
     system_name: Option<String>,
     kernel_version: Option<String>,
@@ -12,6 +20,7 @@ struct SystemInfo {
     host_name: Option<String>,
     memory_usage: u64,
     cpu_usage: f32,
+    processes: Vec<Process>,
 }
 
 fn update_system_info(app: &AppHandle) {
@@ -24,6 +33,18 @@ fn update_system_info(app: &AppHandle) {
         host_name: System::host_name(),
         memory_usage: sys.used_memory(),
         cpu_usage: sys.global_cpu_usage(),
+        processes: sys
+            .processes()
+            .iter()
+            .map(|(pid, process)| {
+                Process {
+                    pid: pid.as_u32(),
+                    name: process.name().to_str().unwrap().to_string(),
+                    cpu: process.cpu_usage(),
+                    memory: process.memory(),
+                }
+            })
+            .collect(),
     }).unwrap();
 }
 
